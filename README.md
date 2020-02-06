@@ -25,13 +25,14 @@
 
 2. **Install the package** 
 
-	The package can be installed by running:
+	The package can be installed with GPU support by running:
 	```bash
-  # CPU-only:
-  pip install -r requirements_cpu.txt
-
-  # Or, with GPU:
   pip install -r requirements_gpu.txt
+	```
+
+  Or for CPU-only:
+	```bash
+  pip install -r requirements_cpu.txt
 	```
 
 3. **Download assets** 
@@ -48,12 +49,12 @@
 
 To execute a planar pushing tasks with a trained CAVIN model, we can run:
 ```bash
-python run_env.py \\
-         --env PushEnv \\
-         --env_config configs/envs/push_env.yaml 
-         --policy_config configs/policies/push_policy.yaml \\ 
-         --config_bindings "{'MAX_MOVABLE_BODIES':3,'NUM_GOAL_STEPS':3,'TASK_NAME':'crossing','LAYOUT_ID':0}" \\
-         --policy CavinPolicy --checkpoint models/baseline_20191001_cavin/ \\
+python run_env.py \
+         --env PushEnv \
+         --env_config configs/envs/push_env.yaml \
+         --policy_config configs/policies/push_policy.yaml \
+         --config_bindings "{'MAX_MOVABLE_BODIES':3,'NUM_GOAL_STEPS':3,'TASK_NAME':'crossing','LAYOUT_ID':0}" \
+         --policy CavinPolicy --checkpoint models/baseline_20191001_cavin/ \
          --debug 1
 ```
 
