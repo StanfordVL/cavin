@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from robovat.utils import loss_utils
+from utils import loss_utils
 
 
 MIN_STATE_DIST = 0.05

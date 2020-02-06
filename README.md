@@ -1,5 +1,5 @@
-
-# CAVIN
+# Dynamics Learning with Cascaded Variational Inference for Multi-Step Manipulation
+Created by [Kuan Fang](http://ai.stanford.edu/~kuanfang/), [Yuke Zhu](http://ai.stanford.edu/~yukez/), [Animesh Garg](https://www.cs.toronto.edu/~garg/), [Silvio Savarese](https://profiles.stanford.edu/intranet/silvio-savarese) and [Li Fei-Fei](https://profiles.stanford.edu/fei-fei-li)
 
 ## Getting Started
 

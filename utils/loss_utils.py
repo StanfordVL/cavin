@@ -83,7 +83,7 @@ def entropy(prob, weights=1.0):
 
 
 def kl_divergence(p, q, weights=1.0):
-    """Kullback–Leibler divergence between two distributions.
+    """Kullback-Leibler divergence between two distributions.
 
     Args:
         p: The first probability distribution.
@@ -102,7 +102,7 @@ def kl_divergence(p, q, weights=1.0):
 
 
 def kl_divergence_gaussian(mean1, stddev1, mean2, stddev2, weights=1.0):
-    """Kullback–Leibler divergence between two Gaussian distribution.
+    """Kullback-Leibler divergence between two Gaussian distribution.
 
     Args:
         mean1: The mean of the first Gaussian distribution.
