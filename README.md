@@ -1,10 +1,7 @@
+
 # CAVIN
 
-[Installation](#installation)  
-[Examples](#examples)  
-[Citation](#citation)  
-
-## Installation
+## Getting Started
 
 1. **Create a virtual environment (recommended)** 
 
@@ -27,12 +24,12 @@
 
 	The package can be installed with GPU support by running:
 	```bash
-  pip install -r requirements_gpu.txt
+	pip install -r requirements_gpu.txt
 	```
 
-  Or for CPU-only:
+	Or for CPU-only:
 	```bash
-  pip install -r requirements_cpu.txt
+	pip install -r requirements_cpu.txt
 	```
 
 3. **Download assets** 
@@ -58,7 +55,7 @@ python run_env.py \
          --debug 1
 ```
 
-To test in different tasks, we can set different values in `--config_bindings`. Specifically, `'TASK_NAME'` can be set to `'clearing'`, `'insertion'` or `'crossing'` and `'LAYOUT_ID'` can be set to 0, 1 or 2.
+To run in different tasks, we can set different values in `--config_bindings`. Specifically, `'TASK_NAME'` can be set to `'clearing'`, `'insertion'` or `'crossing'` and `'LAYOUT_ID'` can be set to `0`, `1` or `2`.
 
 ## Citation
 
