@@ -20,7 +20,7 @@ from tf_agents.environments import tf_py_environment
 from tf_agents.utils import common
 
 from robovat.simulation.simulator import Simulator
-from robovat.utils.logger import logger
+from robovat.utils.logging import logger
 from robovat.utils.yaml_config import YamlConfig
 
 import policies
@@ -152,7 +152,7 @@ def collect(tf_env,
             tf_policy,
             output_dir,
             checkpoint=None,
-            num_iterations=5000000,
+            num_iterations=500000,
             episodes_per_file=500,
             summary_interval=1000):
     """A simple train and eval for SAC."""

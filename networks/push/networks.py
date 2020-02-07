@@ -20,7 +20,11 @@ NORMALIZER_FN = None
 NORMALIZER_PARAMS = None
 
 
-def get_reward(states, next_states, task_name, layout_id, is_high_level=False):
+def get_reward(states,
+               next_states,
+               task_name,
+               layout_id,
+               is_high_level=False):
     """Get the reward value.
 
     Args:

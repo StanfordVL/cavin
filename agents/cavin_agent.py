@@ -64,8 +64,7 @@ class CavinAgent(mpc_agent.MpcAgent):
                  summarize_grads_and_vars=False,
                  train_step_counter=None,
                  name=None):
-        """Creates a CAVIN Agent.
-        """
+        """Creates a CAVIN Agent."""
         tf.Module.__init__(self, name=name)
 
         self._num_goal_steps = policy_config.NUM_GOAL_STEPS

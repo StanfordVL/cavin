@@ -78,7 +78,7 @@ python tfrecord_collect.py \
          --env_config configs/envs/push_env.yaml \
          --policy HeuristicPushPolicy \
          --policy_config configs/policies/push_policy.yaml \
-         --rb_dir episodes/task_agnostic_interactions/ \
+         --rb_dir episodes/task_agnostic_interactions/
 ```
 
 Some of the collected files might be corrupted due to unexpected termination of the running script. To filter the corrupted files:
