@@ -13,6 +13,12 @@ If you find this code useful for your research, please cite:
 }
 ```
 
+## About
+
+This repo is an implementation of the CAVIN planner from our CoRL 2020 [paper](https://arxiv.org/abs/1910.13395). You can checkout the [project website](http://pair.stanford.edu/cavin/) for more information.
+
+The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core algorithm can be applied to any tasks designed with the [OpenAI Gym](https://github.com/tensorflow/agents) interface given the reward functions. We demonstrate CAVIN with three planar pushing tasks with three goals and constraints in simulation and the real world. The task environments are implemented in [RoboVat](https://github.com/StanfordVL/robovat/tree/master/robovat). 
+
 ## Getting Started
 
 1. **Create a virtual environment (recommended)** 
@@ -44,11 +50,16 @@ If you find this code useful for your research, please cite:
 	pip install -r requirements_cpu.txt
 	```
 
+  Install [robovat](https://github.com/StanfordVL/robovat).
+
+  <em>Note:</em> The code was developed with PyBullet 1.8.0. Newer versions of PyBullet might lead to different simulation results.
+
 3. **Download assets** 
 
 	Download and unzip the assets, configs and models folder to the root directory:
 	```bash
-	wget ftp://cs.stanford.edu/cs/cvgl/robovat/data.zip
+	wget ftp://cs.stanford.edu/cs/cvgl/robovat/assets.zip
+	wget ftp://cs.stanford.edu/cs/cvgl/robovat/configs.zip
 	wget ftp://cs.stanford.edu/cs/cvgl/cavin/models.zip
 	unzip data.zip
 	unzip models.zip
@@ -58,7 +69,7 @@ If you find this code useful for your research, please cite:
 
 ### Run with pretrained models
 
-To execute a planar pushing tasks with a trained CAVIN model, we can run:
+To execute an planar pushing task (e.g. crossing) with a trained CAVIN model, we can run:
 ```bash
 python run_env.py \
          --env PushEnv \

@@ -10,6 +10,7 @@ numpy==1.16.5
 PyYAML==5.1.2
 scipy==1.2.2
 six==1.11.0
+pybullet==1.8.0
 tf-nightly==1.15.0.dev20190821
 tf-agents-nightly==0.2.0.dev20190831
 tb-nightly==1.15.0a20190831
