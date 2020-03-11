@@ -17,7 +17,9 @@ If you find this code useful for your research, please cite:
 
 This repo is an implementation of the CAVIN planner from our CoRL 2020 [paper](https://arxiv.org/abs/1910.13395). You can checkout the [project website](http://pair.stanford.edu/cavin/) for more information.
 
-The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core algorithm can be applied to any tasks designed with the [OpenAI Gym](https://github.com/tensorflow/agents) interface given the reward functions. We demonstrate CAVIN with three planar pushing tasks with three goals and constraints in simulation and the real world. The task environments are implemented in [RoboVat](https://github.com/StanfordVL/robovat/tree/master/robovat). 
+The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core algorithm can be applied to any tasks designed with the [OpenAI Gym](https://github.com/openai/gym) interface given the reward functions. We demonstrate CAVIN with three planar pushing tasks with three goals and constraints in simulation and the real world. The task environments are implemented in [RoboVat](https://github.com/StanfordVL/robovat). 
+
+<p align="center"><img width="80%" src="docs/cavin.png" /></p>
 
 ## Getting Started
 
@@ -50,9 +52,9 @@ The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core 
 	pip install -r requirements_cpu.txt
 	```
   
-  Install [robovat](https://github.com/StanfordVL/robovat).
+	 Install [robovat](https://github.com/StanfordVL/robovat).
   
-  <em>Note:</em> The code was developed with PyBullet 1.8.0. Newer versions of PyBullet might lead to different simulation results.
+	 <em>Note:</em> The code was developed with PyBullet 1.8.0. Newer versions of PyBullet might lead to different simulation results.
 
 3. **Download assets** 
 
