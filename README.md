@@ -49,9 +49,9 @@ The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core 
 	```bash
 	pip install -r requirements_cpu.txt
 	```
-
+  
   Install [robovat](https://github.com/StanfordVL/robovat).
-
+  
   <em>Note:</em> The code was developed with PyBullet 1.8.0. Newer versions of PyBullet might lead to different simulation results.
 
 3. **Download assets** 
