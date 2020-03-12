@@ -47,6 +47,8 @@ The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core 
 	pip install -r requirements.txt
 	```
 
+	Install [RoboVat](https://github.com/StanfordVL/robovat) (will be added to the requirements soon).
+
 3. **Download data** 
 
 	Download and unzip the assets, configs and models folder to the root directory:
