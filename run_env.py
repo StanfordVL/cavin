@@ -11,7 +11,6 @@ import argparse
 import ast
 import os
 import random
-import pkg_resources  # NOQA
 import pprint
 
 import numpy as np
@@ -25,6 +24,7 @@ from robovat.simulation.simulator import Simulator
 from robovat.utils.logging import logger
 from robovat.utils.yaml_config import YamlConfig
 
+import policies
 from utils import suite_env
 from utils import py_driver
 
@@ -193,11 +193,6 @@ def parse_config_files_and_bindings(args):
 
 
 def main():
-    # pybullet_version = pkg_resources.get_distribution("pybullet").version
-    # assert pybullet_version == '1.8.0', (
-        # 'Please use pybullet version \'1.8.0\'. The current version %r '
-        # 'could lead to different simulation results.')
-
     args = parse_args()
 
     # Set the random seed.
@@ -236,7 +231,6 @@ def main():
         )
     else:
         assert args.policy is not None
-        import policies
         policy_class = getattr(policies, args.policy)
         tf_policy = policy_class(time_step_spec=tf_env.time_step_spec(),
                                  action_spec=tf_env.action_spec(),

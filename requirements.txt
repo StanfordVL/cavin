@@ -11,4 +11,3 @@ six==1.11.0
 tensorflow==2.0
 tf-agents==0.3.0
 tensorflow_probability==0.8.0
-pybullet==1.8.0

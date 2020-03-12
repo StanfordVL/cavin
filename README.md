@@ -47,7 +47,7 @@ The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core 
 	pip install -r requirements.txt
 	```
 
-	Install [RoboVat](https://github.com/StanfordVL/robovat) (will be added to the requirements soon).
+	Install [tf-slim](https://github.com/google-research/tf-slim) and [RoboVat](https://github.com/StanfordVL/robovat) using `python setup.py install` (will be added to the requirements soon).
 
 3. **Download data** 
 
@@ -56,7 +56,8 @@ The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core 
 	wget ftp://cs.stanford.edu/cs/cvgl/robovat/assets.zip
 	wget ftp://cs.stanford.edu/cs/cvgl/robovat/configs.zip
 	wget ftp://cs.stanford.edu/cs/cvgl/cavin/models.zip
-	unzip data.zip
+	unzip assets.zip
+	unzip configs.zip
 	unzip models.zip
 	```
 
