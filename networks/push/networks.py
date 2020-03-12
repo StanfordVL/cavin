@@ -5,15 +5,12 @@ from __future__ import print_function
 import collections
 
 import tensorflow as tf
+import tf_slim as slim
 
 from robovat.reward_fns import push_reward
-
 from networks import network
+
 from networks.pointnet import pointnet_encoder
-
-
-nest = tf.contrib.framework.nest
-slim = tf.contrib.slim
 
 
 NORMALIZER_FN = None
@@ -49,7 +46,7 @@ def get_reward(states,
         states = states['position'][..., :2]
         next_states = next_states['position'][..., :2]
 
-    rewards, terminations = tf.py_func(
+    rewards, terminations = tf.compat.v1.py_func(
         reward_fn,
         [states, next_states],
         [tf.float32, tf.bool])
@@ -122,7 +119,7 @@ def encode_relation(positions,
             normalizer_fn=NORMALIZER_FN,
             normalizer_params=NORMALIZER_PARAMS):
 
-        with tf.variable_scope('relation_masks'):
+        with tf.compat.v1.variable_scope('relation_masks'):
             body_masks = tf.identity(body_masks, 'body_masks')
             relation_masks = tf.subtract(
                 tf.multiply(
@@ -131,7 +128,7 @@ def encode_relation(positions,
                 tf.linalg.diag(body_masks))
             relation_masks = tf.expand_dims(relation_masks, axis=-1)
 
-        with tf.variable_scope('relation_feats'):
+        with tf.compat.v1.variable_scope('relation_feats'):
             net = tf.subtract(
                 tf.expand_dims(positions, axis=1),
                 tf.expand_dims(positions, axis=2))
@@ -179,13 +176,13 @@ def encode_effect(states,
 
         features = []
 
-        with tf.variable_scope('encode_position'):
+        with tf.compat.v1.variable_scope('encode_position'):
             position_feats = slim.fully_connected(
                 positions, dim_fc_state, scope='fc')
             features.append(position_feats)
 
         if use_relation:
-            with tf.variable_scope('encode_relation'):
+            with tf.compat.v1.variable_scope('encode_relation'):
                 relation_feats = encode_relation(
                     positions,
                     body_masks,
@@ -197,7 +194,7 @@ def encode_effect(states,
             features.append(cloud_feats)
 
         if contexts is not None:
-            with tf.variable_scope('encode_context'):
+            with tf.compat.v1.variable_scope('encode_context'):
                 context_feats = slim.fully_connected(
                     contexts, dim_fc_context, scope='fc')
                 context_feats = tf.tile(tf.expand_dims(context_feats, 1),
@@ -243,7 +240,7 @@ def predict_state_with_effect(states,
             normalizer_fn=NORMALIZER_FN,
             normalizer_params=NORMALIZER_PARAMS):
 
-        with tf.variable_scope('gate'):
+        with tf.compat.v1.variable_scope('gate'):
             net = slim.fully_connected(
                 effects, dim_fc_state, scope='fc')
             gate = slim.fully_connected(
@@ -253,7 +250,7 @@ def predict_state_with_effect(states,
                 normalizer_fn=None,
                 scope='gate')
 
-        with tf.variable_scope('pred_positions'):
+        with tf.compat.v1.variable_scope('pred_positions'):
             net = slim.fully_connected(
                 effects, dim_fc_state, scope='fc')
             delta_positions = slim.fully_connected(
@@ -269,7 +266,7 @@ def predict_state_with_effect(states,
             pred_states['position'] = pred_positions
 
         if use_point_cloud:
-            with tf.variable_scope('pred_cloud_feats'):
+            with tf.compat.v1.variable_scope('pred_cloud_feats'):
                 net = slim.fully_connected(
                     effects, dim_fc_state, scope='fc')
                 delta_cloud_feats = slim.fully_connected(
@@ -306,7 +303,7 @@ def generate_action(inputs, dim_fc_action, num_goal_steps):
             normalizer_fn=NORMALIZER_FN,
             normalizer_params=NORMALIZER_PARAMS):
 
-        with tf.variable_scope('starts'):
+        with tf.compat.v1.variable_scope('starts'):
             net = inputs
             net = slim.fully_connected(
                 net, dim_fc_action, scope='fc')
@@ -322,7 +319,7 @@ def generate_action(inputs, dim_fc_action, num_goal_steps):
                 starts,
                 [-1, num_goal_steps, 2])
 
-        with tf.variable_scope('motions'):
+        with tf.compat.v1.variable_scope('motions'):
             net = inputs
             net = slim.fully_connected(
                 net, dim_fc_action, scope='fc')
@@ -356,7 +353,7 @@ def generate_action_single_step(inputs, dim_fc_action):
             normalizer_fn=NORMALIZER_FN,
             normalizer_params=NORMALIZER_PARAMS):
 
-        with tf.variable_scope('starts'):
+        with tf.compat.v1.variable_scope('starts'):
             net = inputs
             net = slim.fully_connected(
                 net, dim_fc_action, scope='fc')
@@ -369,7 +366,7 @@ def generate_action_single_step(inputs, dim_fc_action):
             starts = tf.identity(tf.tanh(starts / 5.0) * 5.0,
                                  'softly_clipped_starts')
 
-        with tf.variable_scope('motions'):
+        with tf.compat.v1.variable_scope('motions'):
             net = inputs
             net = slim.fully_connected(
                 net, dim_fc_action, scope='fc')
@@ -411,7 +408,7 @@ class StateEncoder(network.Network):
                 normalizer_fn=NORMALIZER_FN,
                 normalizer_params=NORMALIZER_PARAMS):
 
-            with tf.variable_scope('encode_cloud'):
+            with tf.compat.v1.variable_scope('encode_cloud'):
                 offsets = tf.concat(
                     [positions, tf.zeros_like(positions[..., 0:1])],
                     axis=-1)
@@ -526,10 +523,10 @@ class Dynamics(network.Network):
         pred_states['layout_id'] = tf.identity(states['layout_id'])
         pred_states['body_mask'] = tf.identity(states['body_mask'])
 
-        with tf.variable_scope('clip_action'):
+        with tf.compat.v1.variable_scope('clip_action'):
             actions = tf.clip_by_value(actions, -1., 1., 'clipped_actions')
 
-        with tf.variable_scope('encode_effect'):
+        with tf.compat.v1.variable_scope('encode_effect'):
             effects = encode_effect(
                 states=states,
                 contexts=actions,
@@ -610,14 +607,14 @@ class ActionGenerator(network.Network):
                 normalizer_fn=NORMALIZER_FN,
                 normalizer_params=NORMALIZER_PARAMS):
 
-            with tf.variable_scope('global_pool'):
+            with tf.compat.v1.variable_scope('global_pool'):
                 effects = global_pool(
                     effects,
                     axis=1,
                     mask=states['body_mask'],
                     mode='weighted_sum')
 
-            with tf.variable_scope('transform_z'):
+            with tf.compat.v1.variable_scope('transform_z'):
                 net = effects
                 net = slim.fully_connected(
                     net, self._dim_fc_z, scope='fc')
@@ -677,7 +674,7 @@ class ActionGeneratorWithoutZ(network.Network):
                 normalizer_fn=NORMALIZER_FN,
                 normalizer_params=NORMALIZER_PARAMS):
 
-            with tf.variable_scope('global_pool'):
+            with tf.compat.v1.variable_scope('global_pool'):
                 effects = global_pool(
                     effects,
                     axis=1,
@@ -727,7 +724,7 @@ class CInferenceNetwork(network.Network):
                 normalizer_fn=NORMALIZER_FN,
                 normalizer_params=NORMALIZER_PARAMS):
 
-            with tf.variable_scope('encode_dynamics'):
+            with tf.compat.v1.variable_scope('encode_dynamics'):
                 positions = states['position']
                 next_positions = goals['position']
                 delta_positions = tf.subtract(
@@ -743,14 +740,14 @@ class CInferenceNetwork(network.Network):
                     scope='fc')
                 dynamics_feats = tf.identity(net, 'dynamics_feats')
 
-                with tf.variable_scope('global_pool'):
+                with tf.compat.v1.variable_scope('global_pool'):
                     dynamics_feats = global_pool(
                         dynamics_feats,
                         axis=1,
                         mask=states['body_mask'],
                         mode='reduce_sum')
 
-            with tf.variable_scope('inference'):
+            with tf.compat.v1.variable_scope('inference'):
                 net = dynamics_feats
                 net = slim.fully_connected(
                     net, self._dim_fc_state, scope='fc')
@@ -805,7 +802,7 @@ class ZInferenceNetwork(network.Network):
                 normalizer_fn=NORMALIZER_FN,
                 normalizer_params=NORMALIZER_PARAMS):
 
-            with tf.variable_scope('encode_action'):
+            with tf.compat.v1.variable_scope('encode_action'):
                 action_feats = slim.fully_connected(
                     actions, self._dim_fc_action, scope='fc')
                 _shape = action_feats.shape.as_list()
@@ -814,14 +811,14 @@ class ZInferenceNetwork(network.Network):
                         action_feats,
                         [-1, _shape[-2] * _shape[-1]])
 
-            with tf.variable_scope('global_pool'):
+            with tf.compat.v1.variable_scope('global_pool'):
                 effects = global_pool(
                     effects,
                     axis=1,
                     mask=states['body_mask'],
                     mode='weighted_sum')
 
-            with tf.variable_scope('inference'):
+            with tf.compat.v1.variable_scope('inference'):
                 net = tf.concat([effects, action_feats], axis=-1)
                 net = slim.fully_connected(
                     net, self._dim_fc_z, scope='fc')

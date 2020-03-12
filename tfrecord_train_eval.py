@@ -31,7 +31,8 @@ from utils import suite_env
 from utils import tfrecord_replay_buffer
 
 
-framework = tf.contrib.framework
+tf.compat.v1.disable_eager_execution()
+tf.compat.v1.disable_v2_behavior()
 
 
 AGENT_CTORS = {
@@ -291,8 +292,9 @@ def train_eval(tf_env,
             eval_op = tf_agent.eval(eval_trajectories)
             eval_summary_ops = tf.compat.v1.summary.all_v2_summary_ops()
 
-        var_list = framework.get_variables()
-        saver = tf.train.Saver(var_list=var_list, name='saver')
+        var_list = tf.compat.v1.get_collection(
+            key=tf.compat.v1.GraphKeys.GLOBAL_VARIABLES)
+        saver = tf.compat.v1.train.Saver(var_list=var_list, name='saver')
 
         with tf.compat.v1.Session() as sess:
             # Initialize training.
@@ -303,7 +305,9 @@ def train_eval(tf_env,
             sess.run(train_summary_writer.init())
             sess.run(eval_summary_writer.init())
 
-            global_step_call = sess.make_callable(global_step)
+            # TODO: The global_step is not updated properly in the agent after
+            # adapting to TF 2.0.
+            global_step_call = sess.make_callable(global_step.assign_add(1))
             train_step_call = sess.make_callable(train_op)
             eval_step_call = sess.make_callable([eval_op, eval_summary_ops])
 
@@ -316,6 +320,8 @@ def train_eval(tf_env,
             steps_per_second_summary = tf.compat.v2.summary.scalar(
                     name='global_steps_per_sec', data=steps_per_second_ph,
                     step=global_step)
+
+            total_loss = train_step_call()
 
             for _ in range(num_iterations):
                 # Evaluation.

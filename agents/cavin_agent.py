@@ -19,9 +19,6 @@ from networks.push import losses as push_losses
 from policies import cavin_policy
 
 
-nest = tf.contrib.framework.nest
-
-
 CavinLossInfo = collections.namedtuple(
     'CavinLossInfo', ('encoding_loss', 'dynamics_loss', 'vae_loss'))
 
@@ -133,6 +130,13 @@ class CavinAgent(mpc_agent.MpcAgent):
         self._debug_summaries = debug_summaries
         self._summarize_grads_and_vars = summarize_grads_and_vars
 
+        self._encoding_optimizer = tf.compat.v1.train.AdamOptimizer(
+            self._learning_rate)
+        self._dynamics_optimizer = tf.compat.v1.train.AdamOptimizer(
+            self._learning_rate)
+        self._vae_optimizer = tf.compat.v1.train.AdamOptimizer(
+            self._learning_rate)
+
         super(mpc_agent.MpcAgent, self).__init__(
             time_step_spec,
             action_spec,
@@ -190,7 +194,7 @@ class CavinAgent(mpc_agent.MpcAgent):
         encoding_grads = tape.gradient(encoding_loss, encoding_variables)
         self._apply_gradients(encoding_grads,
                               encoding_variables,
-                              tf.train.AdamOptimizer(self._learning_rate))
+                              self._encoding_optimizer)
 
         dynamics_variables = self._dynamics.trainable_variables
         with tf.GradientTape(watch_accessed_variables=False) as tape:
@@ -207,7 +211,7 @@ class CavinAgent(mpc_agent.MpcAgent):
         dynamics_grads = tape.gradient(dynamics_loss, dynamics_variables)
         self._apply_gradients(dynamics_grads,
                               dynamics_variables,
-                              tf.train.AdamOptimizer(self._learning_rate))
+                              self._dynamics_optimizer)
 
         vae_variables = (self._c_inference_network.trainable_variables +
                          self._z_inference_network.trainable_variables +
@@ -228,7 +232,7 @@ class CavinAgent(mpc_agent.MpcAgent):
         vae_grads = tape.gradient(vae_loss, vae_variables)
         self._apply_gradients(vae_grads,
                               vae_variables,
-                              tf.train.AdamOptimizer(self._learning_rate))
+                              self._vae_optimizer)
 
         if self._debug_summaries:
             with tf.name_scope('Weights'):
@@ -347,8 +351,8 @@ class CavinAgent(mpc_agent.MpcAgent):
                  z_weights):
         """Computes the variational inference loss."""
         with tf.name_scope('loss_vae'):
-            init_states = nest.map_structure(lambda x: x[:, 0], states)
-            next_goals = nest.map_structure(lambda x: x[:, -1], next_states)
+            init_states = tf.nest.map_structure(lambda x: x[:, 0], states)
+            next_goals = tf.nest.map_structure(lambda x: x[:, -1], next_states)
 
             ##################
             # High-level inference and prediction.

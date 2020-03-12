@@ -11,6 +11,7 @@ import argparse
 import ast
 import os
 import random
+import pkg_resources  # NOQA
 import pprint
 
 import numpy as np
@@ -24,9 +25,11 @@ from robovat.simulation.simulator import Simulator
 from robovat.utils.logging import logger
 from robovat.utils.yaml_config import YamlConfig
 
-import policies
 from utils import suite_env
 from utils import py_driver
+
+
+tf.compat.v1.disable_eager_execution()
 
 
 def parse_args():
@@ -190,6 +193,11 @@ def parse_config_files_and_bindings(args):
 
 
 def main():
+    # pybullet_version = pkg_resources.get_distribution("pybullet").version
+    # assert pybullet_version == '1.8.0', (
+        # 'Please use pybullet version \'1.8.0\'. The current version %r '
+        # 'could lead to different simulation results.')
+
     args = parse_args()
 
     # Set the random seed.
@@ -217,6 +225,7 @@ def main():
                             config=env_config,
                             debug=args.debug,
                             max_episode_steps=None)
+
     tf_env = tf_py_environment.TFPyEnvironment(py_env)
 
     # Policy.
@@ -227,6 +236,7 @@ def main():
         )
     else:
         assert args.policy is not None
+        import policies
         policy_class = getattr(policies, args.policy)
         tf_policy = policy_class(time_step_spec=tf_env.time_step_spec(),
                                  action_spec=tf_env.action_spec(),
@@ -237,9 +247,9 @@ def main():
     # This is required by tf-agents-nightly.
     tf.compat.v1.enable_resource_variables()
 
-    sess_config = tf.ConfigProto()
+    sess_config = tf.compat.v1.ConfigProto()
     sess_config.gpu_options.allow_growth = True
-    with tf.Session(config=sess_config) as sess:
+    with tf.compat.v1.Session(config=sess_config) as sess:
         observers = []
 
         # Generate episodes.
@@ -264,11 +274,12 @@ def main():
         if args.checkpoint is not None:
             if os.path.isdir(args.checkpoint):
                 train_dir = os.path.join(args.checkpoint, 'train')
-                checkpoint_path = tf.train.latest_checkpoint(train_dir)
+                checkpoint_path = tf.compat.v1.train.latest_checkpoint(
+                    train_dir)
             else:
                 checkpoint_path = args.checkpoint
 
-            restorer = tf.train.Saver(name='restorer')
+            restorer = tf.compat.v1.train.Saver(name='restorer')
             logger.info('Restoring parameters from %s ...', checkpoint_path)
             restorer.restore(sess, checkpoint_path)
 

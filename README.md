@@ -42,21 +42,12 @@ The code is based on [TF-Agent](https://github.com/tensorflow/agents). The core 
 
 2. **Install the package** 
 
-	The package can be installed with GPU support by running:
+	The package can be installed by running:
 	```bash
-	pip install -r requirements_gpu.txt
+	pip install -r requirements.txt
 	```
 
-	Or for CPU-only:
-	```bash
-	pip install -r requirements_cpu.txt
-	```
-  
-	 Install [robovat](https://github.com/StanfordVL/robovat).
-  
-	 <em>Note:</em> The code was developed with PyBullet 1.8.0. Newer versions of PyBullet might lead to different simulation results.
-
-3. **Download assets** 
+3. **Download data** 
 
 	Download and unzip the assets, configs and models folder to the root directory:
 	```bash
@@ -81,6 +72,8 @@ python run_env.py \
          --policy CavinPolicy --checkpoint models/baseline_20191001_cavin/ \
          --debug 1
 ```
+
+<em>Note:</em> The code was originally developed with PyBullet 1.8.0. As we switched to a newer version of the package, we observed that there is a discrepancy in terms of simulation results although it is not a significant change. 
 
 ### Data collection and training
 

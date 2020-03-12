@@ -14,9 +14,6 @@ from networks import samplers
 from policies import tf_policy
 
 
-nest = tf.contrib.framework.nest
-
-
 class MpcPolicy(tf_policy.TFPolicy):
     """Model predictive control policy."""
 
@@ -169,9 +166,9 @@ class MpcPolicy(tf_policy.TFPolicy):
         assert sampled_actions.shape[0] == num_samples
 
         init_state = self._state_encoder(time_step.observation)
-        states_t = nest.map_structure(
+        states_t = tf.nest.map_structure(
             lambda x: expand_and_tile(x, num_samples),
-            nest.map_structure(lambda x: x[0], init_state))
+            tf.nest.map_structure(lambda x: x[0], init_state))
         indices_t = tf.range(0, num_samples, dtype=tf.int64)
 
         cum_rewards = tf.zeros([num_samples], dtype=tf.float32)
@@ -187,7 +184,7 @@ class MpcPolicy(tf_policy.TFPolicy):
             # Index the kept entries.
             if self._use_pruning:
                 if t > 0:
-                    states_t = nest.map_structure(
+                    states_t = tf.nest.map_structure(
                         lambda x: tf.gather(x, indices_t), states_t)
                     cum_rewards = tf.gather(cum_rewards, indices_t)
                     cum_terminations = tf.gather(cum_terminations, indices_t)
@@ -206,7 +203,7 @@ class MpcPolicy(tf_policy.TFPolicy):
                 pred_states_t_k = self._dynamics(
                     (pred_states_t_k, actions_t_k))
                 _pred_states_t.append(pred_states_t_k)
-            _pred_states_t = nest.map_structure(
+            _pred_states_t = tf.nest.map_structure(
                 lambda *x: tf.stack(x, axis=1),
                 *_pred_states_t)
             pred_states_t = pred_states_t_k
@@ -262,7 +259,7 @@ class MpcPolicy(tf_policy.TFPolicy):
             for t in range(num_steps):
                 actions[t] = tf.gather(
                     actions[t], new_indices[t])
-                pred_states[t] = nest.map_structure(
+                pred_states[t] = tf.nest.map_structure(
                     lambda x: tf.gather(x, new_indices[t]),
                     pred_states[t])
                 rewards[t] = tf.gather(
@@ -333,8 +330,8 @@ def prune_plans(rewards, terminations, has_terminated, reward_thresh=0.0):
     grow_inds = tf.boolean_mask(inds, grow_masks)
 
     # Get the number of plans for each category.
-    num_remove = tf.reduce_sum(tf.to_int64(remove_masks))
-    num_grow = tf.reduce_sum(tf.to_int64(grow_masks))
+    num_remove = tf.reduce_sum(tf.cast(remove_masks, tf.int64))
+    num_grow = tf.reduce_sum(tf.cast(grow_masks, tf.int64))
 
     # Sample
     def sample_replace_inds():

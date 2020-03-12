@@ -6,9 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-
-
-slim = tf.contrib.slim
+import tf_slim as slim
 
 
 NORMALIZER_FN = slim.batch_norm
@@ -55,14 +53,12 @@ def pointnet_encoder(
     """
     end_points = {}
 
-    with tf.variable_scope(scope, default_name='pointnet',
-                           reuse=tf.AUTO_REUSE):
+    with tf.compat.v1.variable_scope(scope, default_name='pointnet',
+                                     reuse=tf.compat.v1.AUTO_REUSE):
             with slim.arg_scope([slim.dropout, slim.batch_norm],
                                 is_training=is_training):
                 with slim.arg_scope(
                         [slim.conv2d, slim.fully_connected],
-                        weights_initializer=(
-                            tf.contrib.layers.xavier_initializer()),
                         activation_fn=tf.nn.relu,
                         normalizer_fn=normalizer_fn,
                         normalizer_params=normalizer_params):

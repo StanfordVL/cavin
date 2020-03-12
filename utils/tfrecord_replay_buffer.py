@@ -34,6 +34,10 @@ FILE_FORMAT = (
 BufferInfo = collections.namedtuple('BufferInfo', ['ids'])
 
 
+tf.compat.v1.disable_eager_execution()
+tf = tf.compat.v1
+
+
 class _Stop(object):
     pass
 
