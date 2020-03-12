@@ -16,9 +16,6 @@ from policies.mpc_policy import expand_and_tile
 from policies.mpc_policy import prune_plans
 
 
-nest = tf.contrib.framework.nest
-
-
 def get_state_dists(a, b):
     """Get the state distances.
 
@@ -293,9 +290,9 @@ class CavinPolicy(mpc_policy.MpcPolicy):
         assert sampled_cs.shape[0] == num_samples
 
         init_state = self._state_encoder(time_step.observation)
-        states_t = nest.map_structure(
+        states_t = tf.nest.map_structure(
             lambda x: expand_and_tile(x, num_samples),
-            nest.map_structure(lambda x: x[0], init_state))
+            tf.nest.map_structure(lambda x: x[0], init_state))
         indices_t = tf.range(0, num_samples, dtype=tf.int64)
 
         cum_rewards = tf.zeros([num_samples], dtype=tf.float32)
@@ -310,7 +307,7 @@ class CavinPolicy(mpc_policy.MpcPolicy):
             # Index the kept entries.
             if self._use_pruning:
                 if t > 0:
-                    states_t = nest.map_structure(
+                    states_t = tf.nest.map_structure(
                         lambda x: tf.gather(x, indices_t), states_t)
                     cum_rewards = tf.gather(cum_rewards, indices_t)
                     cum_terminations = tf.gather(cum_terminations, indices_t)
@@ -372,7 +369,7 @@ class CavinPolicy(mpc_policy.MpcPolicy):
             cs = tf.gather(sampled_cs, new_indices[0], axis=0)
 
             for t in range(num_steps):
-                pred_goals[t] = nest.map_structure(
+                pred_goals[t] = tf.nest.map_structure(
                     lambda x: tf.gather(x, new_indices[t]),
                     pred_goals[t])
                 rewards[t] = tf.gather(
@@ -395,9 +392,9 @@ class CavinPolicy(mpc_policy.MpcPolicy):
         assert sampled_zs.shape[0] == num_samples
 
         init_state = self._state_encoder(time_step.observation)
-        states_t = nest.map_structure(
+        states_t = tf.nest.map_structure(
             lambda x: expand_and_tile(x, num_samples),
-            nest.map_structure(lambda x: x[0], init_state))
+            tf.nest.map_structure(lambda x: x[0], init_state))
 
         actions = []
         pred_states = []

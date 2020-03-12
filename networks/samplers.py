@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import gin
 import tensorflow as tf
-from tf_agents.specs import tensor_spec  # NOQA
+from tf_agents.specs import tensor_spec
 
 
 class Base(object):
@@ -68,6 +68,6 @@ class NormalSampler(Base):
             outer_dims = [num_samples, self._num_steps]
 
         shape = outer_dims + [self._dim]
-        z = tf.random_normal(shape, 0.0, 1.0, dtype=tf.float32)
+        z = tf.random.normal(shape, 0.0, 1.0, dtype=tf.float32)
 
         return z

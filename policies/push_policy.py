@@ -4,13 +4,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 from tf_agents.trajectories import policy_step
 
 from networks.push import samplers
 from policies import tf_policy
-
-nest = tf.contrib.framework.nest
 
 
 class HeuristicPushPolicy(tf_policy.TFPolicy):

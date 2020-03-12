@@ -19,9 +19,6 @@ from policies import mpc_policy
 from utils import loss_utils
 
 
-nest = tf.contrib.framework.nest
-
-
 MpcLossInfo = collections.namedtuple(
     'MpcLossInfo', ('encoding_loss', 'dynamics_loss'))
 
@@ -29,6 +26,9 @@ MpcLossInfo = collections.namedtuple(
 @gin.configurable
 class MpcAgent(tf_agent.TFAgent):
     """Model Predictive Control Agent."""
+
+    # TODO: This is a tempory solution for adapting to TF 2.0.
+    _enable_functions = False
 
     def __init__(self,
                  time_step_spec,
@@ -89,6 +89,11 @@ class MpcAgent(tf_agent.TFAgent):
         self._gradient_clipping = gradient_clipping
         self._debug_summaries = debug_summaries
         self._summarize_grads_and_vars = summarize_grads_and_vars
+
+        self._encoding_optimizer = tf.compat.v1.train.AdamOptimizer(
+            self._learning_rate)
+        self._dynamics_optimizer = tf.compat.v1.train.AdamOptimizer(
+            self._learning_rate)
 
         super(MpcAgent, self).__init__(
             time_step_spec,
@@ -158,7 +163,7 @@ class MpcAgent(tf_agent.TFAgent):
         encoding_grads = tape.gradient(encoding_loss, encoding_variables)
         self._apply_gradients(encoding_grads,
                               encoding_variables,
-                              tf.train.AdamOptimizer(self._learning_rate))
+                              self._encoding_optimizer)
 
         dynamics_variables = self._dynamics.trainable_variables
         with tf.GradientTape(watch_accessed_variables=False) as tape:
@@ -175,7 +180,7 @@ class MpcAgent(tf_agent.TFAgent):
         dynamics_grads = tape.gradient(dynamics_loss, dynamics_variables)
         self._apply_gradients(dynamics_grads,
                               dynamics_variables,
-                              tf.train.AdamOptimizer(self._learning_rate))
+                              self._dynamics_optimizer)
 
         if self._debug_summaries:
             with tf.name_scope('Weights'):
@@ -272,13 +277,13 @@ class MpcAgent(tf_agent.TFAgent):
         optimizer.apply_gradients(grads_and_vars)
 
     def _sample_gaussian_noise(self, means, stddevs):
-        return means + stddevs * tf.random_normal(
+        return means + stddevs * tf.random.normal(
             tf.shape(stddevs), 0., 1., dtype=tf.float32)
 
     def _normal_kld(self, z, z_mean, z_stddev, weights=1.0):
         kld_array = (loss_utils.log_normal(z, z_mean, z_stddev) -
                      loss_utils.log_normal(z, 0.0, 1.0))
-        return tf.losses.compute_weighted_loss(kld_array, weights)
+        return tf.compat.v1.losses.compute_weighted_loss(kld_array, weights)
 
     def encoding_loss(self,
                       states,
@@ -290,10 +295,10 @@ class MpcAgent(tf_agent.TFAgent):
 
             state_loss = 0.0
 
-            states_t = nest.map_structure(lambda x: x[:, 0], states)
+            states_t = tf.nest.map_structure(lambda x: x[:, 0], states)
             for t in range(self._num_goal_steps):
                 actions_t = actions[:, t]
-                next_states_t = nest.map_structure(
+                next_states_t = tf.nest.map_structure(
                     lambda x: x[:, t], next_states)
 
                 # Prediction.
@@ -328,10 +333,10 @@ class MpcAgent(tf_agent.TFAgent):
             state_encoding_loss = 0.0
 
             for t in range(self._num_goal_steps):
-                states_t = nest.map_structure(
+                states_t = tf.nest.map_structure(
                     lambda x: x[:, t], states)
                 actions_t = actions[:, t]
-                next_states_t = nest.map_structure(
+                next_states_t = tf.nest.map_structure(
                     lambda x: x[:, t], next_states)
 
                 # Prediction.

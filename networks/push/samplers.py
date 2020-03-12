@@ -41,9 +41,10 @@ class HeuristicPushSampler(samplers.Base):
         body_mask = tf.squeeze(observation['body_mask'], 0)
         num_episodes = tf.squeeze(observation['num_episodes'], 0)
         num_steps = tf.squeeze(observation['num_steps'], 0)
-        action = tf.py_func(
+        action = tf.compat.v1.py_func(
             self._sampler.sample,
-            [position, body_mask, num_episodes, num_steps, num_samples],
+            [position, body_mask, num_episodes, num_steps,
+             tf.convert_to_tensor(num_samples)],
             [tf.float32])
 
         shape = list(self._output_tensor_spec.shape)

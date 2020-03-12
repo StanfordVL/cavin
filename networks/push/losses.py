@@ -119,7 +119,7 @@ def _state_loss(target_data,
         diff = target_data[..., i, :] - output_data[..., i, :]
         loss += 0.5 * tf.reduce_sum(tf.square(diff), axis=-1)
 
-    return tf.losses.compute_weighted_loss(loss, weights)
+    return tf.compat.v1.losses.compute_weighted_loss(loss, weights)
 
 
 def state_loss(targets, outputs, weights=1.0):

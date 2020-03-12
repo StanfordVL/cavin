@@ -1,0 +1,14 @@
+easydict==1.9
+future==0.17.1
+gym==0.14.0
+h5py==2.9.0
+matplotlib==2.2.4
+notebook==5.7.8
+numpy==1.16.5
+PyYAML==5.1.2
+scipy==1.2.2
+six==1.11.0
+tensorflow==2.0
+tf-agents==0.3.0
+tensorflow_probability==0.8.0
+pybullet==1.8.0

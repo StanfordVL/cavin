@@ -13,8 +13,6 @@ from tf_agents.trajectories import policy_step
 
 from policies import tf_policy
 
-nest = tf.contrib.framework.nest
-
 
 class RandomPolicy(random_tf_policy.RandomTFPolicy):
     """Sample random antipodal grasps."""

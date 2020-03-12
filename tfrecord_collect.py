@@ -28,7 +28,7 @@ from utils import suite_env
 from utils import tfrecord_replay_buffer
 
 
-framework = tf.contrib.framework
+tf.compat.v1.disable_eager_execution()
 
 
 def parse_args():
@@ -181,7 +181,10 @@ def collect(tf_env,
 
         with tf.compat.v1.Session() as sess:
             # Initialize training.
-            common.initialize_uninitialized_variables(sess)
+            try:
+                common.initialize_uninitialized_variables(sess)
+            except Exception:
+                pass
 
             # Restore checkpoint.
             if checkpoint is not None:

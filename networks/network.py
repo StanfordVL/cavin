@@ -1,4 +1,8 @@
-"""Base extension to network to simplify copy operations."""
+"""Base extension to network to simplify copy operations.
+
+Note: This file overrides Network and DistributionNetwork classes in TF-Agents
+to get around Keras.
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -15,10 +19,6 @@ from tf_agents.trajectories import time_step
 from tensorflow.python.training.tracking import base    # TF internal
 from tensorflow.python.util import tf_decorator    # TF internal
 from tensorflow.python.util import tf_inspect    # TF internal
-
-
-framework = tf.contrib.framework
-nest = tf.contrib.framework.nest
 
 
 class _NetworkMeta(abc.ABCMeta):
@@ -52,7 +52,7 @@ class _NetworkMeta(abc.ABCMeta):
         if not init:
             # This wrapper class does not define an __init__.    When someone
             # creates the object, the __init__ of its parent class will be
-            # called.    We will call that __init__ instead separately since the
+            # called. We will call that __init__ instead separately since the
             # parent class is also a subclass of Network.    Here just create
             # the class and return.
             return abc.ABCMeta.__new__(mcs, classname, baseclasses, attrs)
@@ -74,8 +74,8 @@ class _NetworkMeta(abc.ABCMeta):
                 # Add +1 to skip `self` in arg_spec.args.
                 kwargs[arg_spec.args[1 + i]] = arg
             init(self, **kwargs)
-            # Avoid auto tracking which prevents keras from tracking layers that
-            # are passed as kwargs to the Network.
+            # Avoid auto tracking which prevents keras from tracking layers
+            # that are passed as kwargs to the Network.
             with base.no_automatic_dependency_tracking_scope(self):
                 setattr(self, "_saved_kwargs", kwargs)
 
@@ -87,7 +87,11 @@ class _NetworkMeta(abc.ABCMeta):
 class Network(object):
     """Base extension to network to simplify copy operations."""
 
-    def __init__(self, input_tensor_spec, state_spec, name, mask_split_fn=None):
+    def __init__(self,
+                 input_tensor_spec,
+                 state_spec,
+                 name,
+                 mask_split_fn=None):
         """Creates an instance of `Network`.
 
         Args:
@@ -96,16 +100,11 @@ class Network(object):
             state_spec: A nest of `tensor_spec.TensorSpec` representing the
                 state needed by the network. Use () if none.
             name: A string representing the name of the network.
-                mask_split_fn: A function used for masking valid/invalid actions
-                with each state of the environment. The function takes in a full
-                observation and returns a tuple consisting of 1) the part of the
-                observation intended as input to the network and 2) the mask. An
-                example mask_split_fn could be as simple as:
-                    ```
-                    def mask_split_fn(observation):
-                        return observation['network_input'], observation['mask']
-                    ```
-                    If None, masking is not applied.
+            mask_split_fn: A function used for masking valid/invalid actions
+                with each state of the environment. The function takes in a
+                full observation and returns a tuple consisting of 1) the part
+                of the observation intended as input to the network and 2) the
+                mask.
         """
         self._name = name
         self._input_tensor_spec = input_tensor_spec
@@ -146,20 +145,20 @@ class Network(object):
             step_type = tf.expand_dims(time_step.StepType.FIRST, 0)
             output_tensors = self.__call__(random_input, step_type, None)
 
-            with tf.variable_scope(self._name):
-                scope = tf.get_variable_scope()
-                self._weights = framework.get_variables(
-                        scope=scope)
-                self._trainable_weights = framework.get_trainable_variables(
-                        scope=scope)
+            with tf.compat.v1.variable_scope(self._name):
+                self._weights = tf.compat.v1.get_collection(
+                    key=tf.compat.v1.GraphKeys.GLOBAL_VARIABLES,
+                    scope=self._name)
+                self._trainable_weights = tf.compat.v1.trainable_variables(
+                        scope=self._name)
                 self._non_trainable_weights = [
                     var for var in self._weights
                     if var not in self._trainable_weights]
 
             if self._output_tensor_spec is None:
-                self._output_tensor_spec = nest.map_structure(
+                self._output_tensor_spec = tf.nest.map_structure(
                     lambda t: tensor_spec.TensorSpec.from_tensor(
-                        tf.squeeze(t, axis=0), name=t.name),
+                        tf.squeeze(t, axis=0)),
                     output_tensors)
 
     @property
@@ -218,7 +217,7 @@ class Network(object):
         initialized with (excepting any new kwargs).
 
         Args:
-            **kwargs: Args to override when recreating this network.    Commonly
+            **kwargs: Args to override when recreating this network. Commonly
                 overridden args include 'name'.
 
         Returns:
@@ -229,7 +228,8 @@ class Network(object):
     def __call__(self, inputs, *args, **kwargs):
         tf.nest.assert_same_structure(inputs, self.input_tensor_spec)
         # TODO: Debug.
-        with tf.variable_scope(self._name, reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope(self._name,
+                                         reuse=tf.compat.v1.AUTO_REUSE):
             outputs = self.call(inputs, *args, **kwargs)
             self._built = True
             return outputs
