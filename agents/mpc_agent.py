@@ -161,9 +161,9 @@ class MpcAgent(tf_agent.TFAgent):
         tf.debugging.check_numerics(
             encoding_loss, 'encoding loss is inf or nan.')
         encoding_grads = tape.gradient(encoding_loss, encoding_variables)
-        self._apply_gradients(encoding_grads,
-                              encoding_variables,
-                              self._encoding_optimizer)
+        encoding_grad_op = self._apply_gradients(encoding_grads,
+                                                 encoding_variables,
+                                                 self._encoding_optimizer)
 
         dynamics_variables = self._dynamics.trainable_variables
         with tf.GradientTape(watch_accessed_variables=False) as tape:
@@ -178,9 +178,9 @@ class MpcAgent(tf_agent.TFAgent):
         tf.debugging.check_numerics(
             dynamics_loss, 'dynamics loss is inf or nan.')
         dynamics_grads = tape.gradient(dynamics_loss, dynamics_variables)
-        self._apply_gradients(dynamics_grads,
-                              dynamics_variables,
-                              self._dynamics_optimizer)
+        dynamics_grad_op = self._apply_gradients(dynamics_grads,
+                                                 dynamics_variables,
+                                                 self._dynamics_optimizer)
 
         if self._debug_summaries:
             with tf.name_scope('Weights'):
@@ -198,9 +198,13 @@ class MpcAgent(tf_agent.TFAgent):
                 data=dynamics_loss,
                 step=self.train_step_counter)
 
-        self.train_step_counter.assign_add(1)
+        increase_train_step_counter = self.train_step_counter.assign_add(1)
 
-        total_loss = encoding_loss + dynamics_loss
+        with tf.control_dependencies([increase_train_step_counter,
+                                      encoding_grad_op,
+                                      dynamics_grad_op]):
+            total_loss = encoding_loss + dynamics_loss
+
         extra = MpcLossInfo(encoding_loss=encoding_loss,
                             dynamics_loss=dynamics_loss)
         return tf_agent.LossInfo(loss=total_loss, extra=extra)
@@ -274,7 +278,7 @@ class MpcAgent(tf_agent.TFAgent):
             eager_utils.add_gradients_summaries(
                 grads_and_vars, self.train_step_counter)
 
-        optimizer.apply_gradients(grads_and_vars)
+        return optimizer.apply_gradients(grads_and_vars)
 
     def _sample_gaussian_noise(self, means, stddevs):
         return means + stddevs * tf.random.normal(

@@ -24,8 +24,6 @@ from robovat.simulation.simulator import Simulator
 from robovat.utils.yaml_config import YamlConfig
 
 from agents import mpc_agent
-from agents import vae_mpc_agent
-from agents import sectar_agent
 from agents import cavin_agent
 from utils import suite_env
 from utils import tfrecord_replay_buffer
@@ -37,8 +35,6 @@ tf.compat.v1.disable_v2_behavior()
 
 AGENT_CTORS = {
     'mpc': mpc_agent.MpcAgent,
-    'vae': vae_mpc_agent.VaeMpcAgent,
-    'sectar': sectar_agent.SectarAgent,
     'cavin': cavin_agent.CavinAgent,
 }
 
@@ -305,9 +301,7 @@ def train_eval(tf_env,
             sess.run(train_summary_writer.init())
             sess.run(eval_summary_writer.init())
 
-            # TODO: The global_step is not updated properly in the agent after
-            # adapting to TF 2.0.
-            global_step_call = sess.make_callable(global_step.assign_add(1))
+            global_step_call = sess.make_callable(global_step)
             train_step_call = sess.make_callable(train_op)
             eval_step_call = sess.make_callable([eval_op, eval_summary_ops])
 

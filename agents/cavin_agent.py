@@ -192,9 +192,9 @@ class CavinAgent(mpc_agent.MpcAgent):
         tf.debugging.check_numerics(
             encoding_loss, 'encoding loss is inf or nan.')
         encoding_grads = tape.gradient(encoding_loss, encoding_variables)
-        self._apply_gradients(encoding_grads,
-                              encoding_variables,
-                              self._encoding_optimizer)
+        encoding_grad_op = self._apply_gradients(encoding_grads,
+                                                 encoding_variables,
+                                                 self._encoding_optimizer)
 
         dynamics_variables = self._dynamics.trainable_variables
         with tf.GradientTape(watch_accessed_variables=False) as tape:
@@ -209,9 +209,9 @@ class CavinAgent(mpc_agent.MpcAgent):
         tf.debugging.check_numerics(
             dynamics_loss, 'dynamics loss is inf or nan.')
         dynamics_grads = tape.gradient(dynamics_loss, dynamics_variables)
-        self._apply_gradients(dynamics_grads,
-                              dynamics_variables,
-                              self._dynamics_optimizer)
+        dynamics_grad_op = self._apply_gradients(dynamics_grads,
+                                                 dynamics_variables,
+                                                 self._dynamics_optimizer)
 
         vae_variables = (self._c_inference_network.trainable_variables +
                          self._z_inference_network.trainable_variables +
@@ -230,9 +230,9 @@ class CavinAgent(mpc_agent.MpcAgent):
                 z_weights=z_weights)
         tf.debugging.check_numerics(vae_loss, 'vae loss is inf or nan.')
         vae_grads = tape.gradient(vae_loss, vae_variables)
-        self._apply_gradients(vae_grads,
-                              vae_variables,
-                              self._vae_optimizer)
+        vae_grad_op = self._apply_gradients(vae_grads,
+                                            vae_variables,
+                                            self._vae_optimizer)
 
         if self._debug_summaries:
             with tf.name_scope('Weights'):
@@ -260,9 +260,14 @@ class CavinAgent(mpc_agent.MpcAgent):
                 data=vae_loss,
                 step=self.train_step_counter)
 
-        self.train_step_counter.assign_add(1)
+        increase_train_step_counter = self.train_step_counter.assign_add(1)
 
-        total_loss = encoding_loss + dynamics_loss + vae_loss
+        with tf.control_dependencies([increase_train_step_counter,
+                                      encoding_grad_op,
+                                      dynamics_grad_op,
+                                      vae_grad_op]):
+            total_loss = encoding_loss + dynamics_loss + vae_loss
+
         extra = CavinLossInfo(encoding_loss=encoding_loss,
                               dynamics_loss=dynamics_loss,
                               vae_loss=vae_loss)
